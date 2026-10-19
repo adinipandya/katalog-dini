@@ -63,3 +63,51 @@ export async function gantiPasswordAdmin(formData) {
 
   redirect("/admin/password?status=success");
 }
+
+export async function tambahProdukAdmin(formData) {
+  const supabase = await createSupabaseSessionClient();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !userData.user) {
+    redirect("/admin/login");
+  }
+
+  const nama = formData.get("nama");
+  const hargaInput = formData.get("harga");
+  const kategori = formData.get("kategori");
+  const fotoUrl = formData.get("foto_url");
+  const deskripsi = formData.get("deskripsi");
+
+  if (typeof nama !== "string" || !nama.trim()) {
+    redirect("/admin/produk/baru?status=invalid-name");
+  }
+
+  const harga =
+    typeof hargaInput === "string" && hargaInput.trim() ? Number(hargaInput) : Number.NaN;
+  if (!Number.isSafeInteger(harga) || harga < 0) {
+    redirect("/admin/produk/baru?status=invalid-price");
+  }
+
+  if (
+    (typeof kategori !== "string" && kategori !== null) ||
+    (typeof fotoUrl !== "string" && fotoUrl !== null) ||
+    (typeof deskripsi !== "string" && deskripsi !== null)
+  ) {
+    redirect("/admin/produk/baru?status=invalid-fields");
+  }
+
+  const { error } = await supabase.from("produk").insert({
+    nama: nama.trim(),
+    harga,
+    kategori: typeof kategori === "string" && kategori.trim() ? kategori.trim() : null,
+    foto_url: typeof fotoUrl === "string" && fotoUrl.trim() ? fotoUrl.trim() : null,
+    deskripsi: typeof deskripsi === "string" && deskripsi.trim() ? deskripsi.trim() : null,
+  });
+
+  if (error) {
+    console.error("Gagal menambahkan produk:", error);
+    redirect("/admin/produk/baru?status=save-failed");
+  }
+
+  redirect("/admin?status=created");
+}

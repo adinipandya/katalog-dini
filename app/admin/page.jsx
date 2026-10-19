@@ -4,7 +4,8 @@ import Tombol from "@/components/Tombol";
 import { redirect } from "next/navigation";
 import { createSupabaseSessionClient } from "@/lib/supabase/server";
 
-export default async function HalamanAdmin() {
+export default async function HalamanAdmin({ searchParams }) {
+  const params = await searchParams;
   const supabase = await createSupabaseSessionClient();
   const { data: userData, error: userError } = await supabase.auth.getUser();
 
@@ -37,6 +38,11 @@ export default async function HalamanAdmin() {
         <h1 className="text-2xl font-extrabold">Produk</h1>
         <Tombol href="/admin/produk/baru">Tambah produk</Tombol>
       </div>
+      {params?.status === "created" && (
+        <p role="status" className="text-utama">
+          Produk berhasil ditambahkan.
+        </p>
+      )}
       {gagalMemuat ? (
         <p role="alert" className="text-bahaya">
           Daftar produk gagal dimuat. Periksa koneksi dan konfigurasi Supabase, lalu coba lagi.
