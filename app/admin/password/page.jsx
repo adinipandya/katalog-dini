@@ -1,11 +1,32 @@
 import NavAdmin from "@/components/NavAdmin";
 import Input from "@/components/Input";
 import Tombol from "@/components/Tombol";
-import CatatanBelumAktif from "@/components/CatatanBelumAktif";
+import { gantiPasswordAdmin } from "@/app/admin/actions";
 
-// US-05: form ganti password belum berfungsi.
-// Tugas peserta: admin yang sudah login bisa mengganti password-nya, diproses di server.
-export default function HalamanGantiPassword() {
+const pesanStatus = {
+  success: { teks: "Password berhasil diganti.", gaya: "text-utama" },
+  invalid: {
+    teks: "Isi password baru dan konfirmasinya dengan benar.",
+    gaya: "text-bahaya",
+  },
+  "too-short": {
+    teks: "Password baru harus minimal 8 karakter.",
+    gaya: "text-bahaya",
+  },
+  mismatch: {
+    teks: "Password baru dan konfirmasi tidak sama.",
+    gaya: "text-bahaya",
+  },
+  "update-failed": {
+    teks: "Password gagal diganti. Silakan coba lagi.",
+    gaya: "text-bahaya",
+  },
+};
+
+export default async function HalamanGantiPassword({ searchParams }) {
+  const params = await searchParams;
+  const status = pesanStatus[params?.status];
+
   return (
     <div className="flex flex-col gap-6 py-8">
       <NavAdmin />
@@ -15,7 +36,7 @@ export default function HalamanGantiPassword() {
           Ganti password bawaan segera setelah pertama kali masuk. Minimal 8 karakter.
         </p>
       </div>
-      <form className="flex max-w-sm flex-col gap-4">
+      <form action={gantiPasswordAdmin} className="flex max-w-sm flex-col gap-4">
         <Input
           label="Password baru"
           name="password_baru"
@@ -32,11 +53,15 @@ export default function HalamanGantiPassword() {
           minLength={8}
           required
         />
+        {status && (
+          <p role={params.status === "success" ? "status" : "alert"} className={status.gaya}>
+            {status.teks}
+          </p>
+        )}
         <Tombol type="submit" className="self-start">
           Simpan password
         </Tombol>
       </form>
-      <CatatanBelumAktif>Ganti password belum berfungsi: lihat US-05.</CatatanBelumAktif>
     </div>
   );
 }
