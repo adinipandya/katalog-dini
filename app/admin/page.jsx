@@ -38,16 +38,28 @@ export default async function HalamanAdmin({ searchParams }) {
         <h1 className="text-2xl font-extrabold">Produk</h1>
         <Tombol href="/admin/produk/baru">Tambah produk</Tombol>
       </div>
-      {(params?.status === "created" || params?.status === "updated") && (
+      {["created", "updated", "deleted"].includes(params?.status) && (
         <p role="status" className="text-utama">
           {params.status === "created"
             ? "Produk berhasil ditambahkan."
-            : "Perubahan produk berhasil disimpan."}
+            : params.status === "updated"
+              ? "Perubahan produk berhasil disimpan."
+              : "Produk berhasil dihapus."}
         </p>
       )}
-      {params?.status === "invalid-update" && (
+      {["invalid-update", "invalid-delete"].includes(params?.status) && (
         <p role="alert" className="text-bahaya">
-          Produk tidak dapat diperbarui. Pilih produk dari daftar dan coba lagi.
+          Produk tidak dapat diproses. Pilih produk dari daftar dan coba lagi.
+        </p>
+      )}
+      {params?.status === "delete-failed" && (
+        <p role="alert" className="text-bahaya">
+          Produk gagal dihapus. Periksa koneksi dan izin akun, lalu coba lagi.
+        </p>
+      )}
+      {params?.status === "delete-not-found" && (
+        <p role="alert" className="text-bahaya">
+          Produk tidak ditemukan atau sudah dihapus.
         </p>
       )}
       {gagalMemuat ? (

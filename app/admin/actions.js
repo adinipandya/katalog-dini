@@ -174,3 +174,35 @@ export async function ubahProdukAdmin(formData) {
 
   redirect("/admin?status=updated");
 }
+
+export async function hapusProdukAdmin(formData) {
+  const supabase = await createSupabaseSessionClient();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !userData.user) {
+    redirect("/admin/login");
+  }
+
+  const id = formData.get("id");
+  if (typeof id !== "string" || !/^[1-9]\d*$/.test(id)) {
+    redirect("/admin?status=invalid-delete");
+  }
+
+  const { data, error } = await supabase
+    .from("produk")
+    .delete()
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    console.error("Gagal menghapus produk:", error);
+    redirect("/admin?status=delete-failed");
+  }
+
+  if (!data) {
+    redirect("/admin?status=delete-not-found");
+  }
+
+  redirect("/admin?status=deleted");
+}
