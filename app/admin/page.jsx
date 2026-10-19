@@ -38,9 +38,16 @@ export default async function HalamanAdmin({ searchParams }) {
         <h1 className="text-2xl font-extrabold">Produk</h1>
         <Tombol href="/admin/produk/baru">Tambah produk</Tombol>
       </div>
-      {params?.status === "created" && (
+      {(params?.status === "created" || params?.status === "updated") && (
         <p role="status" className="text-utama">
-          Produk berhasil ditambahkan.
+          {params.status === "created"
+            ? "Produk berhasil ditambahkan."
+            : "Perubahan produk berhasil disimpan."}
+        </p>
+      )}
+      {params?.status === "invalid-update" && (
+        <p role="alert" className="text-bahaya">
+          Produk tidak dapat diperbarui. Pilih produk dari daftar dan coba lagi.
         </p>
       )}
       {gagalMemuat ? (

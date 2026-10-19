@@ -111,3 +111,66 @@ export async function tambahProdukAdmin(formData) {
 
   redirect("/admin?status=created");
 }
+
+export async function ubahProdukAdmin(formData) {
+  const supabase = await createSupabaseSessionClient();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !userData.user) {
+    redirect("/admin/login");
+  }
+
+  const id = formData.get("id");
+  if (typeof id !== "string" || !/^[1-9]\d*$/.test(id)) {
+    redirect("/admin?status=invalid-update");
+  }
+
+  const editUrl = `/admin/produk/${id}/ubah`;
+  const nama = formData.get("nama");
+  const hargaInput = formData.get("harga");
+  const kategori = formData.get("kategori");
+  const fotoUrl = formData.get("foto_url");
+  const deskripsi = formData.get("deskripsi");
+
+  if (typeof nama !== "string" || !nama.trim()) {
+    redirect(`${editUrl}?status=invalid-name`);
+  }
+
+  const harga =
+    typeof hargaInput === "string" && hargaInput.trim() ? Number(hargaInput) : Number.NaN;
+  if (!Number.isSafeInteger(harga) || harga < 0) {
+    redirect(`${editUrl}?status=invalid-price`);
+  }
+
+  if (
+    (typeof kategori !== "string" && kategori !== null) ||
+    (typeof fotoUrl !== "string" && fotoUrl !== null) ||
+    (typeof deskripsi !== "string" && deskripsi !== null)
+  ) {
+    redirect(`${editUrl}?status=invalid-fields`);
+  }
+
+  const { data, error } = await supabase
+    .from("produk")
+    .update({
+      nama: nama.trim(),
+      harga,
+      kategori: typeof kategori === "string" && kategori.trim() ? kategori.trim() : null,
+      foto_url: typeof fotoUrl === "string" && fotoUrl.trim() ? fotoUrl.trim() : null,
+      deskripsi: typeof deskripsi === "string" && deskripsi.trim() ? deskripsi.trim() : null,
+    })
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    console.error("Gagal mengubah produk:", error);
+    redirect(`${editUrl}?status=save-failed`);
+  }
+
+  if (!data) {
+    redirect(`${editUrl}?status=not-found`);
+  }
+
+  redirect("/admin?status=updated");
+}
